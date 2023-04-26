@@ -1,0 +1,26 @@
+version: '3'
+services:
+    API:
+        image: 'weather:latest'
+        ports:
+            - "8080:8080"
+        depends_on:
+            - db
+        environment:
+             SPRING_PROFILES_ACTIVE : server
+    db:
+        image: postgres:14
+        ports:
+          - "5432:5432"
+        environment:
+             POSTGRES_DB: weather_user
+             POSTGRES_USER: user
+             POSTGRES_PASSWORD: 12345
+             PGDATA: /var/lib/postgresql/data/pgdata
+        volumes:
+           - pgdata:/var/lib/postgresql/data
+volumes:
+    pgdata:
+
+
+

@@ -1,0 +1,17 @@
+CREATE TABLE users(
+id BIGSERIAL PRIMARY KEY,
+login VARCHAR(50) NOT NULL,
+password VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE role(
+id BIGSERIAL PRIMARY KEY,
+role_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE user_role(
+user_id BIGINT REFERENCES users(id),
+role_id BIGINT REFERENCES role(id)
+);
+
+
