@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface UserService {
+
     AuthResponse addUser(User user);
     Optional<User> getUserById(Long id);
     Optional<User> getUserByLogin(String login);
@@ -15,6 +16,6 @@ public interface UserService {
     Collection<User> getAll();
     AuthResponse authenticate(User user);
 
-
+//TODO get -> find
 
 }

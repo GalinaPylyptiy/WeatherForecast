@@ -44,8 +44,8 @@ public class UserServiceImpl implements UserService {
     public AuthResponse addUser(User user) {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         Role role = roleRepository.getRoleByRoleName("USER");
-        user.setRoles(List.of(role));
         user.setPassword(encodedPassword);
+        user.setRoles(List.of(role));
         userRepository.save(user);
         String jwtToken =jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
