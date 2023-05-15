@@ -6,9 +6,8 @@ import com.epam.weatherForecast.client.impl.WeatherApiClientImpl;
 import com.epam.weatherForecast.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collection;
 
 
 @Service
@@ -16,6 +15,7 @@ public class WeatherServiceImpl implements WeatherService {
 
     private final OpenWeatherClientImpl openWeatherClient;
     private final WeatherApiClientImpl weatherApiClient;
+
 
     @Autowired
     public WeatherServiceImpl(OpenWeatherClientImpl openWeatherClient, WeatherApiClientImpl weatherApiClient) {
@@ -37,7 +37,7 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     @Override
-    public List<Weather> getWeatherForToday(String country, String city, boolean eachHour) {
+    public Collection<Weather> getWeatherForToday(String country, String city, boolean eachHour) {
         if (eachHour){
          return weatherApiClient.getWeatherForToday(country, city);
         }
