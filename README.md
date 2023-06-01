@@ -54,9 +54,7 @@ Now you can make calls:
 ### To get current weather:
 - http://localhost:8080/current?city={your city}&country={your country};
 ### Today`s weather of any country and city in the world:
-(eachHour is a boolean value: type true, if you want to know weather for each hour a day, false, 
-if you want to get 3 hour interval )
-- http://localhost:8080/today?city={your city}&country={your country}&eachHour={true/false};
+- http://localhost:8080/today?city={your city}&country={your country};
 ### Weather by hour of any country and city in the world:
 - http://localhost:8080/hour?city={your city}&country={your country}&hour = {from 0 to 23};
 ### Compare weather in different cities within one country:
