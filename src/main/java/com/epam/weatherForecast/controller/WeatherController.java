@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/weather")
@@ -26,9 +25,9 @@ public class WeatherController {
     }
 
     @GetMapping("/today")
-    public List<Weather> getWeatherForToday(@RequestParam("city") String city,
-                                            @RequestParam("country") String country,
-                                            @RequestParam("eachHour") boolean eachHour){
+    public Collection<Weather> getWeatherForToday(@RequestParam("city") String city,
+                                                  @RequestParam("country") String country,
+                                                  @RequestParam("eachHour") boolean eachHour){
         return weatherService.getWeatherForToday(country, city, eachHour);
     }
 

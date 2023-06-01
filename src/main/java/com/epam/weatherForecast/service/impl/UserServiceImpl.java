@@ -43,21 +43,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthResponse addUser(User user) {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
-        Role role = roleRepository.getRoleByRoleName("USER");
+        Role defaultRole = roleRepository.getRoleByRoleName("USER");
         user.setPassword(encodedPassword);
-        user.setRoles(List.of(role));
+        user.setRoles(List.of(defaultRole));
         userRepository.save(user);
         String jwtToken =jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> findUserById(Long id) {
         return userRepository.findById(id);
     }
 
     @Override
-    public Optional<User> getUserByLogin(String login) {
+    public Optional<User> findUserByLogin(String login) {
         return userRepository.findByLogin(login);
     }
 
@@ -67,13 +67,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<User> getAll() {
+    public Collection<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
     public AuthResponse authenticate(User user) {
-       authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getLogin(), user.getPassword()));
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getLogin(), user.getPassword()));
         String jwtToken =jwtService.generateToken(user);
         return new AuthResponse(jwtToken);
     }

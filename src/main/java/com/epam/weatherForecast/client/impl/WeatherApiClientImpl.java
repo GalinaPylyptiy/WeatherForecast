@@ -1,8 +1,11 @@
 package com.epam.weatherForecast.client.impl;
 import com.epam.weatherForecast.client.WeatherClient;
+import com.epam.weatherForecast.dto.weatherApi.CurrentWeatherDto;
+import com.epam.weatherForecast.dto.weatherApi.ForecastWeatherDto;
+import com.epam.weatherForecast.dto.weatherApi.ForecastDay;
+import com.epam.weatherForecast.dto.weatherApi.Hour;
 import com.epam.weatherForecast.model.Weather;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +18,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Objects;
 
 @Component
@@ -25,6 +28,7 @@ public class WeatherApiClientImpl implements WeatherClient {
     private static final String CURRENT_WEATHER_URL = "http://api.weatherapi.com/v1/current.json?key={apiKey}&q={city},{country}&aqi=no";
     private static final String WEATHER_FOR_HOUR = "http://api.weatherapi.com/v1/forecast.json?key={apiKey}&q={city},{country}&hour={hour}";
     private static final String WEATHER_FOR_TODAY = "http://api.weatherapi.com/v1/forecast.json?key={apiKey}&q={city},{country}&days=1";
+    private static final String ERROR_MSG = "Error parsing JSON";
     @Value("${weatherAPIKey}")
     private String API_KEY;
     private final RestTemplate restTemplate;
@@ -44,7 +48,7 @@ public class WeatherApiClientImpl implements WeatherClient {
     }
 
     @Override
-    public List<Weather> getWeatherForToday(String country, String city) {
+    public Collection<Weather> getWeatherForToday(String country, String city) {
         URI url = new UriTemplate(WEATHER_FOR_TODAY).expand(API_KEY,city,country);
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         return convertWeatherList(response,city,country);
@@ -59,65 +63,60 @@ public class WeatherApiClientImpl implements WeatherClient {
 
     private Weather convertCurrent(ResponseEntity<String> response, String city, String country) {
         try {
-            JsonNode root = objectMapper.readTree(Objects.requireNonNull(response.getBody()));
+            CurrentWeatherDto currentWeatherDto = objectMapper.readValue(Objects.requireNonNull(response.getBody()), CurrentWeatherDto.class);
             Weather weather = new Weather();
+            weather.setTemperature(String.valueOf(currentWeatherDto.getCurrent().getTemperature()));
+            weather.setFeelsLike(String.valueOf(currentWeatherDto.getCurrent().getFeelsLike()));
+            weather.setDescription(currentWeatherDto.getCurrent().getCondition().getDescription());
+            weather.setWindSpeed(String.valueOf(currentWeatherDto.getCurrent().getWindSpeed()));
             weather.setCity(city);
             weather.setCountry(country);
-            weather.setTemperature(root.path("current").path("temp_c").asText());
-            weather.setFeelsLike(root.path("current").path("feelslike_c").asText());
-            weather.setWindSpeed(root.path("current").path("wind_mph").asText());
-            weather.setDescription(root.path("current").path("condition").path("text").asText());
             weather.setDateAndTime(LocalDateTime.now());
             return weather;
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error parsing JSON", e);
+            throw new RuntimeException(ERROR_MSG, e);
         }
     }
 
     private Weather convertHourWeather(ResponseEntity<String> response, String city, String country) {
         try {
-            JsonNode root = objectMapper.readTree(Objects.requireNonNull(response.getBody()));
-            JsonNode jsonNodeArray = root.path("forecast").get("forecastday");
+            ForecastWeatherDto weatherDto = objectMapper.readValue(Objects.requireNonNull(response.getBody()), ForecastWeatherDto.class);
             Weather weather = new Weather();
-            jsonNodeArray.forEach(jsonNode ->
-                    jsonNode.get("hour")
-                            .forEach(hourWeather -> {
-                                setWeatherData(city, country, weather, hourWeather);
-                            }));
+            for(ForecastDay forecastday: weatherDto.getForecast().getForecastday()){
+                forecastday.getHour().forEach(hourWeather-> setWeatherData(city, country, hourWeather, weather));
+            }
             return weather;
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error parsing JSON", e);
+            throw new RuntimeException(ERROR_MSG, e);
         }
     }
 
-    private List<Weather> convertWeatherList(ResponseEntity<String> response, String city, String country){
-        List<Weather> todayWeatherList = new ArrayList<>();
+    private Collection<Weather> convertWeatherList(ResponseEntity<String> response, String city, String country){
+        Collection<Weather> todayWeatherList = new ArrayList<>();
       try{
-          JsonNode root = objectMapper.readTree(Objects.requireNonNull(response.getBody()));
-          JsonNode jsonNodeArray = root.path("forecast").get("forecastday");
-          jsonNodeArray.forEach(dayWeatherArray -> {
-              dayWeatherArray.get("hour")
-                      .forEach(hourWeather->{
-                          Weather weather = new Weather();
-                          setWeatherData(city, country, weather, hourWeather);
-                          todayWeatherList.add(weather);
-                      }
-              );
-          } );
+          ForecastWeatherDto weatherDto = objectMapper.readValue(Objects.requireNonNull(response.getBody()), ForecastWeatherDto.class);
+          for(ForecastDay forecastday: weatherDto.getForecast().getForecastday()){
+              forecastday.getHour().forEach(hourWeather->{
+                  Weather weather = new Weather();
+                  setWeatherData(city, country, hourWeather, weather);
+                  todayWeatherList.add(weather);
+              });
+          }
       } catch (JsonProcessingException e) {
-          throw new RuntimeException("Error parsing JSON", e);
+          throw new RuntimeException(ERROR_MSG, e);
       }
       return todayWeatherList;
     }
 
-    private void setWeatherData(String city, String country, Weather weather, JsonNode hourWeather) {
+    private void setWeatherData(String city, String country, Hour hourWeather, Weather weather) {
+        String dateAndTimePattern = "yyyy-MM-dd HH:mm";
         weather.setCity(city);
         weather.setCountry(country);
-        weather.setTemperature(hourWeather.path("temp_c").asText());
-        weather.setFeelsLike(hourWeather.path("feelslike_c").asText());
-        weather.setWindSpeed(hourWeather.path("wind_mph").asText());
-        weather.setDescription(hourWeather.path("condition").path("text").asText());
-        weather.setDateAndTime(LocalDateTime.parse(hourWeather.path("time").asText(),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        weather.setTemperature(String.valueOf(hourWeather.getTemperature()));
+        weather.setFeelsLike(String.valueOf(hourWeather.getFeelsLike()));
+        weather.setWindSpeed(String.valueOf(hourWeather.getWindSpeed()));
+        weather.setDescription(hourWeather.getCondition().getDescription());
+        weather.setDateAndTime(LocalDateTime.parse(hourWeather.getDateAndTime(),
+                DateTimeFormatter.ofPattern(dateAndTimePattern)));
     }
 }
