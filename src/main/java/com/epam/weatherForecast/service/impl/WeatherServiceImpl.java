@@ -1,47 +1,45 @@
 package com.epam.weatherForecast.service.impl;
 
-import com.epam.weatherForecast.client.impl.OpenWeatherClientImpl;
+import com.epam.weatherForecast.externalWeatherService.ExternalWeatherService;
 import com.epam.weatherForecast.model.Weather;
-import com.epam.weatherForecast.client.impl.WeatherApiClientImpl;
 import com.epam.weatherForecast.service.WeatherService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.epam.weatherForecast.util.AverageValueCalculator;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
 public class WeatherServiceImpl implements WeatherService {
 
-    private final OpenWeatherClientImpl openWeatherClient;
-    private final WeatherApiClientImpl weatherApiClient;
+    private final Collection<ExternalWeatherService> externalWeatherServices;
+    private final AverageValueCalculator calculator;
 
-
-    @Autowired
-    public WeatherServiceImpl(OpenWeatherClientImpl openWeatherClient, WeatherApiClientImpl weatherApiClient) {
-        this.openWeatherClient = openWeatherClient;
-        this.weatherApiClient = weatherApiClient;
+    public WeatherServiceImpl(Collection<ExternalWeatherService> externalWeatherServices, AverageValueCalculator calculator) {
+        this.externalWeatherServices = externalWeatherServices;
+        this.calculator = calculator;
     }
 
     @Override
     public Weather getCurrentWeather(String city, String country) {
-        Weather weather1 = openWeatherClient.getCurrentWeather(city, country);
-        Weather weather2 = weatherApiClient.getCurrentWeather(city, country);
+        Collection<Weather> currentWeatherList = getCurrentWeatherList(country, city);
         LocalDateTime now = LocalDateTime.now();
-        String averageTemp = String.valueOf(calculateAverageTemperature(weather1, weather2));
-        String averageFeelsLike = String.valueOf(calculateAverageFeelsLikeTemp(weather1, weather2));
-        String averageWindSpeed = String.valueOf(calculateAverageWindSpeed(weather1, weather2));
-        String description = weather2.getDescription();
+        String averageTemp = convertToString(calculator.calculateAverageValue(currentWeatherList, Weather::getTemperature));
+        String averageFeelsLike = convertToString(calculator.calculateAverageValue(currentWeatherList, Weather::getFeelsLike));
+        String averageWindSpeed = convertToString(calculator.calculateAverageValue(currentWeatherList, Weather::getWindSpeed));
+        String description = getDescription(currentWeatherList);
         return new Weather(city, country, now, averageTemp,
                 averageFeelsLike, averageWindSpeed, description);
     }
 
     @Override
-    public Collection<Weather> getWeatherForToday(String country, String city, boolean eachHour) {
-        if (eachHour){
-         return weatherApiClient.getWeatherForToday(country, city);
-        }
-          return openWeatherClient.getWeatherForToday(country,city);
+    public Collection<Weather> getWeatherForToday(String country, String city) {
+        return getAvgWeatherForToday(country, city);
     }
 
     @Override
@@ -49,17 +47,10 @@ public class WeatherServiceImpl implements WeatherService {
         if (hour < 0 || hour >= 24) {
             throw new IllegalArgumentException("Inserted hour should be from  0 to 23");
         }
-        Weather weather1 = weatherApiClient.getTodayWeatherForHour(country, city, hour);
-        Weather weather2 = openWeatherClient.getTodayWeatherForHour(country, city, hour);
-        Weather resultWeather = new Weather();
-        resultWeather.setDateAndTime(weather1.getDateAndTime());
-        resultWeather.setTemperature(String.valueOf(calculateAverageTemperature(weather1, weather2)));
-        resultWeather.setFeelsLike(String.valueOf(calculateAverageFeelsLikeTemp(weather1, weather2)));
-        resultWeather.setWindSpeed(String.valueOf(calculateAverageWindSpeed(weather1, weather2)));
-        resultWeather.setDescription(weather1.getDescription());
-        resultWeather.setCountry(country);
-        resultWeather.setCity(city);
-        return resultWeather;
+        Collection<Weather> hourWeatherList = getHourWeatherList(country, city, hour);
+        Weather hourWeather = setAvgWeatherDataWithoutDateAndTime(city, country, hourWeatherList);
+        hourWeather.setDateAndTime(getDateAndTimeWithHour(hour));
+        return hourWeather;
     }
 
     @Override
@@ -73,29 +64,69 @@ public class WeatherServiceImpl implements WeatherService {
         return "Weather in " + city2 + " is higher on " + (temp2 - temp1) + "°C";
     }
 
-    private int calculateAverageTemperature(Weather weather1, Weather weather2) {
-        int temp1 = convert(weather1.getTemperature());
-        int temp2 = convert(weather2.getTemperature());
-        return (temp1 + temp2) / 2;
+    private Collection<Weather> getCurrentWeatherList(String country, String city) {
+        return externalWeatherServices.stream()
+                .map(externalWeatherService -> externalWeatherService.getCurrentWeather(city, country))
+                .collect(Collectors.toList());
     }
 
-    private int calculateAverageWindSpeed(Weather weather1, Weather weather2) {
-        int wind1 = convert(weather1.getWindSpeed());
-        int wind2 = convert(weather2.getWindSpeed());
-        return (wind1 + wind2) / 2;
+    private Collection<Weather> getHourWeatherList(String country, String city, int hour) {
+        return externalWeatherServices.stream()
+                .map(externalWeatherService -> externalWeatherService.getTodayWeatherForHour(city, country, hour))
+                .collect(Collectors.toList());
     }
 
-    private int calculateAverageFeelsLikeTemp(Weather weather1, Weather weather2) {
-        int feelsLike1 = convert(weather1.getFeelsLike());
-        int feelsLike2 = convert(weather2.getFeelsLike());
-        return (feelsLike1 + feelsLike2) / 2;
+    private List<Collection<Weather>> getWeatherListForToday(String country, String city) {
+        return externalWeatherServices.stream()
+                .map(externalWeatherService -> externalWeatherService.getWeatherForToday(country, city))
+                .collect(Collectors.toList());
     }
 
-    private int convert(String value) {
-        double result = Double.parseDouble(value);
-        return (int) result;
+    private Collection<Weather> getAvgWeatherForToday(String country, String city) {
+        return getWeatherListForToday(country, city)
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(Weather::getDateAndTime))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    Weather weather = setAvgWeatherDataWithoutDateAndTime(city, country, entry.getValue());
+                    weather.setDateAndTime(entry.getKey());
+                    return weather;
+                })
+                .sorted(Comparator.comparingInt(weather -> weather.getDateAndTime().getHour()))
+                .collect(Collectors.toList());
     }
 
-//    TODO Collection<WeatherClient>
+    private String getDescription(Collection<Weather> weatherList) {
+        return weatherList.stream()
+                .map(Weather::getDescription)
+                .findAny()
+                .orElse("Description is undefined");
+    }
+
+    private LocalDateTime getDateAndTimeWithHour(int hour) {
+        LocalDate localDate = LocalDate.now();
+        LocalTime localTime = LocalTime.of(hour, 0, 0);
+        return LocalDateTime.of(localDate, localTime);
+    }
+
+    private Weather setAvgWeatherDataWithoutDateAndTime(String city, String country, Collection<Weather> weatherList){
+        Weather weather = new Weather();
+        weather.setCity(city);
+        weather.setCountry(country);
+        weather.setTemperature(convertToString(calculator.calculateAverageValue(weatherList, Weather::getTemperature)));
+        weather.setFeelsLike(convertToString(calculator.calculateAverageValue(weatherList, Weather::getFeelsLike)));
+        weather.setWindSpeed(convertToString(calculator.calculateAverageValue(weatherList, Weather::getWindSpeed)));
+        weather.setDescription(getDescription(weatherList));
+        return weather;
+    }
+
+    private String convertToString(int value) {
+        return String.valueOf(value);
+    }
 
 }
+
+//TODO Lombok
+//TODO MupStruct

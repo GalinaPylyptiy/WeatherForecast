@@ -5,10 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-
 import java.time.LocalDateTime;
 
-public class Weather {
+public class Weather implements Cloneable {
 
     private String city;
 
@@ -25,6 +24,7 @@ public class Weather {
 
     private String windSpeed;
 
+//    TODO change field name (type, definition, condition, state)
     private String description;
 
     public Weather() {
@@ -38,6 +38,17 @@ public class Weather {
         this.feelsLike = feelsLike;
         this.windSpeed = windSpeed;
         this.description = description;
+    }
+
+    public Weather cloneWeatherWithoutDateAndTime(){
+        Weather cloned = new Weather();
+        cloned.setCity(this.getCity());
+        cloned.setCountry(this.getCountry());
+        cloned.setTemperature(this.getTemperature());
+        cloned.setFeelsLike(this.getFeelsLike());
+        cloned.setWindSpeed(this.getWindSpeed());
+        cloned.setDescription(this.getDescription());
+        return cloned;
     }
 
     public String getCity() {
