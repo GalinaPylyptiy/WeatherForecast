@@ -1,14 +1,14 @@
-#WEATHER FORECAST REST API
+# WEATHER FORECAST REST API
 Simple REST API created with the help of  spring boot.
 
-###Application is made to find out the weather info such as: 
+### Application is made to find out the weather info such as: 
 -current weather;
 -today`s weather of any country and city in the world;
 -weather by hour of any country and city in the world;
 -compare weather in different cities within one country;
 The aim of creating a project is learning how to create REST API and  make REST calls to other services.
 
-###Technologies:
+### Technologies:
 -Java 17;
 -PostgreSQL 14;
 -Spring Boot 3;
@@ -16,7 +16,7 @@ The aim of creating a project is learning how to create REST API and  make REST 
 -Spring Security 3 with JWT
 -FlyWay for DB migrations;
 
-###Requirements
+### Requirements
 For building and running the application you need:
 -JDK 17;
 -Maven 3X;
@@ -51,13 +51,13 @@ Insert:
 Copy you JWT token from response.(It will look something like this: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjgyNTcwMDE1LCJleHAiOjE2ODI1NzE4MTV9.Geq4tCdl3RstnDxtFhhrhM04JJUA_Ec_5IfqpBD5rfs)
 Insert this JWT token to "Authorization" tab, choose Type = Bearer Token
 Now you can make calls:
-###To get current weather:
+### To get current weather:
 - http://localhost:8080/current?city={your city}&country={your country};
-###Today`s weather of any country and city in the world:
+### Today`s weather of any country and city in the world:
 - http://localhost:8080/today?city={your city}&country={your country};
-###Weather by hour of any country and city in the world:
+### Weather by hour of any country and city in the world:
 - http://localhost:8080/hour?city={your city}&country={your country}&hour = {from 0 to 23};
-###Compare weather in different cities within one country:
+### Compare weather in different cities within one country:
 - http://localhost:8080/compare?city1={city1}&city2={city2}&country={country};
 -choose method  GET;
 -send the request;
