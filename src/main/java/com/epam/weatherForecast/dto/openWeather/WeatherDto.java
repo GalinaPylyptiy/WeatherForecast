@@ -13,6 +13,16 @@ public class WeatherDto {
    @JsonProperty(value = "dt_txt")
    private String dateAndTime;
 
+    public WeatherDto() {
+    }
+
+    public WeatherDto(Main main, Collection<Weather> weather, Wind wind, String dateAndTime) {
+        this.main = main;
+        this.weather = weather;
+        this.wind = wind;
+        this.dateAndTime = dateAndTime;
+    }
+
     public Main getMain() {
         return main;
     }
