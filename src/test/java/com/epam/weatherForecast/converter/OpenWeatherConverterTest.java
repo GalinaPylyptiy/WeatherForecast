@@ -51,11 +51,15 @@ class OpenWeatherConverterTest {
     void convertCurrentWeatherShouldConvertWeatherFromWeatherDto() {
         String country = "Kazakhstan";
         String city = "Astana";
-       when(openWeatherClient.getCurrentWeatherByCountryAndCity(city, country)).thenReturn(getWeatherDto());
+       when(openWeatherClient.getCurrentWeatherByCountryAndCity(city, country))
+           .thenReturn(getWeatherDto());
        WeatherDto weatherDto = openWeatherClient.getCurrentWeatherByCountryAndCity(city, country);
        com.epam.weatherForecast.model.Weather weather = converter.convertCurrentWeather(city, country);
-       assertThat(weather.getTemperature()).isEqualTo(String.valueOf(weatherDto.getMain().getTemp()));
-       assertThat(weather.getFeelsLike()).isEqualTo(String.valueOf(weatherDto.getMain().getFeelsLike()));
+       var expectedList = String.valueOf(weatherDto.getMain().getTemp());
+       assertThat(weather.getTemperature())
+           .isEqualTo(expectedList);
+       assertThat(weather.getFeelsLike()) //TODO separate
+           .isEqualTo(String.valueOf(weatherDto.getMain().getFeelsLike()));
     }
 
     @Test
@@ -65,8 +69,8 @@ class OpenWeatherConverterTest {
         when(openWeatherClient.getWeatherForTodayEach3Hours(country, city)).thenReturn(getWeatherListDto());
         WeatherListDto weatherListDto = openWeatherClient.getWeatherForTodayEach3Hours(country, city);
         List<com.epam.weatherForecast.model.Weather> weatherList = converter.convertWeatherListForToday(city, country);
-        assertThat(weatherList).isNotEmpty();
-        assertThat(weatherList.size()).isEqualTo(weatherListDto.getList().size());
-
+        assertThat(weatherList)
+            .isNotEmpty()
+            .hasSameSizeAs(weatherListDto.getList().size()); //TODO expected value
     }
 }
