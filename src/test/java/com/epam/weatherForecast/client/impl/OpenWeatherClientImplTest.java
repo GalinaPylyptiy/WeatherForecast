@@ -1,6 +1,5 @@
 package com.epam.weatherForecast.client.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
-
 import java.net.URI;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
@@ -26,26 +22,20 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 class OpenWeatherClientImplTest {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private  RestTemplate restTemplate;
 
     private MockRestServiceServer server;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-
-    //TODO Optional, mock remote service (MockServer)
-    private static final String CURRENT_WEATHER_URL =
-        "http://api.openweathermap.org/data/2.5/weather?q={city},{country}&appid={key}&units=metric";
-    private static final String TODAY_WEATHER_URL =
-        "http://api.openweathermap.org/data/2.5/forecast?q={city},{country}&appid={key}&units=metric&cnt=8";
     @Value("${openWeatherApiKey}")
     private String apiKey;
     private String city ="Astana";
     private String country ="Kazakhstan";
+    private static final String CURRENT_WEATHER_URL =
+        "http://api.openweathermap.org/data/2.5/weather?q={city},{country}&appid={key}&units=metric";
+    private static final String TODAY_WEATHER_URL =
+        "http://api.openweathermap.org/data/2.5/forecast?q={city},{country}&appid={key}&units=metric&cnt=8";
 
 
-    @BeforeAll
+    @BeforeEach
     void setUp() {
         server = MockRestServiceServer.createServer(restTemplate);
     }
@@ -54,7 +44,7 @@ class OpenWeatherClientImplTest {
     void testUrlForGettingCurrentWeatherShouldRespondWithSuccess() {
         URI url = new UriTemplate(CURRENT_WEATHER_URL)
             .expand(city, country, apiKey);
-        this.server.expect(requestTo(url))
+        server.expect(requestTo(url))
             .andRespond(withStatus(HttpStatus.OK));
     }
 
@@ -62,7 +52,7 @@ class OpenWeatherClientImplTest {
     void testUrlForGettingTodayWeatherShouldRespondWithSuccess() {
         URI url = new UriTemplate(TODAY_WEATHER_URL)
             .expand(city, country, apiKey);
-        this.server.expect(requestTo(url))
+        server.expect(requestTo(url))
             .andRespond(withStatus(HttpStatus.OK));
     }
 

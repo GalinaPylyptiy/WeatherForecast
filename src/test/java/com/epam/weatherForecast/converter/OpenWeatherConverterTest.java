@@ -7,6 +7,7 @@ import com.epam.weatherForecast.dto.openWeather.WeatherDto;
 import com.epam.weatherForecast.dto.openWeather.WeatherListDto;
 import com.epam.weatherForecast.dto.openWeather.Wind;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -48,6 +49,7 @@ class OpenWeatherConverterTest {
     }
 
     @Test
+    @DisplayName("Should convert WeatherDTO to Weather model and complete all fields in Weather model ")
     void convertCurrentWeatherShouldConvertWeatherFromWeatherDto() {
         String country = "Kazakhstan";
         String city = "Astana";
@@ -55,22 +57,24 @@ class OpenWeatherConverterTest {
            .thenReturn(getWeatherDto());
        WeatherDto weatherDto = openWeatherClient.getCurrentWeatherByCountryAndCity(city, country);
        com.epam.weatherForecast.model.Weather weather = converter.convertCurrentWeather(city, country);
-       var expectedList = String.valueOf(weatherDto.getMain().getTemp());
-       assertThat(weather.getTemperature())
-           .isEqualTo(expectedList);
-       assertThat(weather.getFeelsLike()) //TODO separate
-           .isEqualTo(String.valueOf(weatherDto.getMain().getFeelsLike()));
+       var expectedValue = String.valueOf(weatherDto.getMain().getTemp());
+        assertThat(weather)
+                .isNotNull()
+                .hasNoNullFieldsOrProperties()
+                .extracting(com.epam.weatherForecast.model.Weather::getTemperature)
+                .isEqualTo(expectedValue);
     }
 
     @Test
-    void convertWeatherListForTodayShouldConvertWeatherListDtoToWeatherList() {
+    void shouldConvertWeatherListDtoToWeatherList() {
         String country = "Kazakhstan";
         String city = "Astana";
         when(openWeatherClient.getWeatherForTodayEach3Hours(country, city)).thenReturn(getWeatherListDto());
         WeatherListDto weatherListDto = openWeatherClient.getWeatherForTodayEach3Hours(country, city);
         List<com.epam.weatherForecast.model.Weather> weatherList = converter.convertWeatherListForToday(city, country);
+        var expectedSize = weatherListDto.getList().size();
         assertThat(weatherList)
             .isNotEmpty()
-            .hasSameSizeAs(weatherListDto.getList().size()); //TODO expected value
+                .hasSize(expectedSize);
     }
 }

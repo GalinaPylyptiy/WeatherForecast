@@ -25,34 +25,19 @@ public class OpenWeatherClientImpl implements OpenWeatherClient {
     @Value("${openWeatherApiKey}")
     private String apiKey;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
 
-    public OpenWeatherClientImpl(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public OpenWeatherClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
     }
 
     public WeatherDto getCurrentWeatherByCountryAndCity(String city, String country) {
-        try {
-            ResponseEntity<String> response = getResponse(CURRENT_WEATHER_URL, country, city);
-            return objectMapper.readValue(Objects.requireNonNull(response.getBody()), WeatherDto.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(ERROR_MSG, e);
-        }
+        URI url = new UriTemplate(CURRENT_WEATHER_URL).expand(city, country, apiKey);
+        return restTemplate.getForObject(url, WeatherDto.class);
+
     }
 
     public WeatherListDto getWeatherForTodayEach3Hours(String country, String city) {
-        try {
-            ResponseEntity<String> response = getResponse(TODAY_WEATHER_URL, country, city);
-            return objectMapper.readValue(Objects.requireNonNull(response.getBody()), WeatherListDto.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(ERROR_MSG, e);
-        }
+        URI url = new UriTemplate(TODAY_WEATHER_URL).expand(city, country, apiKey);
+        return restTemplate.getForObject(url, WeatherListDto.class);
     }
-
-    private ResponseEntity<String> getResponse(String stringUrl, String country, String city) {
-        URI url = new UriTemplate(stringUrl).expand(city, country, apiKey);
-        return restTemplate.getForEntity(url, String.class);
-    }
-
 }
