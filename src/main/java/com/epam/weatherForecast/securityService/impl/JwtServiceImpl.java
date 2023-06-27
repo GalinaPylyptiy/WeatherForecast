@@ -1,15 +1,19 @@
-package com.epam.weatherForecast.service.impl;
+package com.epam.weatherForecast.securityService.impl;
+
 import com.epam.weatherForecast.entity.User;
-import com.epam.weatherForecast.service.JwtService;
+import com.epam.weatherForecast.exception.InvalidJwtTokenException;
+import com.epam.weatherForecast.securityService.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -23,7 +27,8 @@ import java.util.function.Function;
 public class JwtServiceImpl implements JwtService {
 
     @Value("${secretKey}")
-    private  String SECRET_KEY;
+    private String SECRET_KEY;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtServiceImpl.class);
 
     @Override
     public String extractUserLogin(String jwtToken) {
@@ -31,8 +36,8 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String generateToken(User user){
-      return   generateToken(new HashMap<>(), user);
+    public String generateToken(User user) {
+        return generateToken(new HashMap<>(), user);
     }
 
     @Override
@@ -50,22 +55,24 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public boolean isTokenValid(String jwtToken, UserDetails user){
-        String login = extractUserLogin(jwtToken);
-        return user.getUsername().equals(login) && !isTokenExpired(jwtToken);
+    public void validateToken(String jwtToken) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getSighInKey())
+                    .build()
+                    .parseClaimsJws(jwtToken);
+        } catch (Exception ex) {
+            LOGGER.error("Token is not valid: {}", ex.getMessage());
+            throw new InvalidJwtTokenException("JWT token is invalid");
+        }
     }
 
-    private <T>  T extractClaim(String jwtToken, Function<Claims, T> claimsResolver){
+    private <T> T extractClaim(String jwtToken, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(jwtToken);
         return claimsResolver.apply(claims);
     }
 
-    private boolean isTokenExpired(String jwtToken){
-        Date exp = extractClaim(jwtToken, Claims::getExpiration);
-        return exp.before(new Date());
-    }
-
-    private Claims extractAllClaims(String jwtToken){
+    private Claims extractAllClaims(String jwtToken) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSighInKey())
                 .build()
@@ -74,7 +81,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private Key getSighInKey() {
-        byte[]keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

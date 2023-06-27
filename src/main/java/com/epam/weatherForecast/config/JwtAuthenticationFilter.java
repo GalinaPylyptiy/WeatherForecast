@@ -1,6 +1,6 @@
 package com.epam.weatherForecast.config;
 
-import com.epam.weatherForecast.service.JwtService;
+import com.epam.weatherForecast.securityService.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,10 +12,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -31,39 +32,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        if (isAuthHeaderValid(authHeader)) {
-            String jwtToken = authHeader.substring(TOKEN_PREFIX.length());
-            String userLogin = jwtService.extractUserLogin(jwtToken);
-            updateContext(userLogin, jwtToken, request);
-        }
+        parseToken(request)
+                .ifPresent(this::addUserToContext);
         filterChain.doFilter(request, response);
     }
 
-    private boolean isAuthHeaderValid(String authHeader) {
-        return authHeader != null && authHeader.startsWith(TOKEN_PREFIX);
+    private void addUserToContext(String jwtToken) {
+        jwtService.validateToken(jwtToken);
+        String userLogin = jwtService.extractUserLogin(jwtToken);
+        updateSecurityContext(getUserDetails(userLogin));
     }
 
-    private void updateContext(String userLogin, String jwtToken,HttpServletRequest request ){
+    private Optional<String> parseToken(HttpServletRequest request) {
+        return Optional.ofNullable(request)
+                .map(r -> r.getHeader("Authorization"))
+                .filter(authHeader -> authHeader.startsWith(TOKEN_PREFIX))
+                .map(authHeader -> authHeader.substring(TOKEN_PREFIX.length()));
+    }
+
+    private void updateSecurityContext(UserDetails userDetails) {
         SecurityContext context = SecurityContextHolder.getContext();
-        UserDetails userDetails = getUserDetails(userLogin);
-        if(jwtService.isTokenValid(jwtToken, userDetails) && context.getAuthentication()==null) {
-            UsernamePasswordAuthenticationToken authToken = getAuthToken(userDetails);
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            context.setAuthentication(authToken);
-        }
+        UsernamePasswordAuthenticationToken authToken = getAuthToken(userDetails);
+        context.setAuthentication(authToken);
     }
 
-    private UsernamePasswordAuthenticationToken getAuthToken(UserDetails userDetails){
+    private UsernamePasswordAuthenticationToken getAuthToken(UserDetails userDetails) {
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
-    private UserDetails getUserDetails(String userLogin){
-        if(userLogin==null){
-            throw new IllegalArgumentException("User login can not be null");
-        }
+    private UserDetails getUserDetails(String userLogin) {
         return userDetailsService.loadUserByUsername(userLogin);
     }
 

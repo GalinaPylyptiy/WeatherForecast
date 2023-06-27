@@ -5,7 +5,7 @@ import com.epam.weatherForecast.entity.Role;
 import com.epam.weatherForecast.entity.User;
 import com.epam.weatherForecast.repository.RoleRepository;
 import com.epam.weatherForecast.repository.UserRepository;
-import com.epam.weatherForecast.service.JwtService;
+import com.epam.weatherForecast.securityService.JwtService;
 import com.epam.weatherForecast.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

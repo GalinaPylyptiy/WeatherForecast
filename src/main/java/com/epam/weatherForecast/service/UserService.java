@@ -10,10 +10,15 @@ import java.util.Optional;
 public interface UserService {
 
     AuthResponse addUser(User user);
+
     Optional<User> findUserById(Long id);
+
     Optional<User> findUserByLogin(String login);
+
     void addRoleToUser(User user, Role role);
+
     Collection<User> findAll();
+
     AuthResponse authenticate(User user);
 
 

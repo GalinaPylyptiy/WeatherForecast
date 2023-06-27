@@ -1,4 +1,4 @@
-package com.epam.weatherForecast.service.impl;
+package com.epam.weatherForecast.securityService.impl;
 
 import com.epam.weatherForecast.entity.User;
 import com.epam.weatherForecast.service.UserService;
