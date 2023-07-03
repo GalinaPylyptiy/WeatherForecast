@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 @Component
-public class AverageValueCalculatorImpl implements AverageValueCalculator {
+public class AverageSumValueCalculator implements AverageValueCalculator {
 
     @Override
     public int calculateAverageValue(Collection<Weather> weatherList, Function<Weather, String> valueFunction) {
@@ -15,6 +15,6 @@ public class AverageValueCalculatorImpl implements AverageValueCalculator {
                 .map(valueFunction)
                 .mapToDouble(Double::parseDouble)
                 .reduce(0, Double::sum);
-        return (int) sumTemp / weatherList.size();
+        return (int) Math.ceil(sumTemp / weatherList.size());
     }
 }

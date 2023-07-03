@@ -10,7 +10,7 @@ public interface WeatherService {
 
     Collection<Weather> getWeatherForToday(String country, String city);
 
-    Weather getTodayWeatherForHour(String country, String city, int hour);
+    Weather getTodayWeatherForHour(String country, String city, Integer hour);
 
     String compareTwoCitiesTemperature(String city1, String city2, String country);
 

@@ -7,6 +7,7 @@ import com.epam.weatherForecast.dto.weatherApi.ForecastDay;
 import com.epam.weatherForecast.dto.weatherApi.ForecastWeatherDto;
 import com.epam.weatherForecast.dto.weatherApi.Hour;
 import com.epam.weatherForecast.model.Weather;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,15 +16,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 
+@RequiredArgsConstructor
 @Component
 public class WeatherApiConverter {
 
     private final WeatherApiClient weatherApiClient;
-
-    @Autowired
-    public WeatherApiConverter(WeatherApiClientImpl weatherApiClient) {
-        this.weatherApiClient = weatherApiClient;
-    }
 
     public Weather convertCurrentWeather(String city, String country) {
         CurrentWeatherDto currentWeatherDto = weatherApiClient.getCurrentWeatherByCityAndCountry(country, city);

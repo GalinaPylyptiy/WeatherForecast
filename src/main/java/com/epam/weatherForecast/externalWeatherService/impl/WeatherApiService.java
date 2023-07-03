@@ -2,20 +2,17 @@ package com.epam.weatherForecast.externalWeatherService.impl;
 import com.epam.weatherForecast.externalWeatherService.ExternalWeatherService;
 import com.epam.weatherForecast.converter.WeatherApiConverter;
 import com.epam.weatherForecast.model.Weather;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
+@RequiredArgsConstructor
 @Component
 public class WeatherApiService implements ExternalWeatherService {
 
     private final WeatherApiConverter converter;
-
-    @Autowired
-    public WeatherApiService(WeatherApiConverter converter) {
-        this.converter = converter;
-    }
 
     @Override
     public Weather getCurrentWeather(String country, String city) {

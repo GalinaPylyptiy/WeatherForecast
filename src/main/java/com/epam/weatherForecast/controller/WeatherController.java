@@ -2,6 +2,7 @@ package com.epam.weatherForecast.controller;
 
 import com.epam.weatherForecast.model.Weather;
 import com.epam.weatherForecast.service.WeatherService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -9,15 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/weather")
 public class WeatherController {
 
     private final WeatherService weatherService;
-
-    public WeatherController(WeatherService weatherService) {
-        this.weatherService = weatherService;
-    }
 
     @GetMapping("/current")
     public Weather getCurrentWeather(@RequestParam("city") String city,

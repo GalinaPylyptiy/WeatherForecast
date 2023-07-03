@@ -6,6 +6,7 @@ services:
             - "8080:8080"
         depends_on:
             - db
+            - cache
         environment:
              SPRING_PROFILES_ACTIVE : server
     db:
@@ -19,6 +20,14 @@ services:
              PGDATA: /var/lib/postgresql/data/pgdata
         volumes:
            - pgdata:/var/lib/postgresql/data
+
+    cache:
+        image: "redis"
+        ports:
+            - "6379:6379"
+        environment:
+            - ALLOW_EMPTY_PASSWORD=yes
+            - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
 volumes:
     pgdata:
 

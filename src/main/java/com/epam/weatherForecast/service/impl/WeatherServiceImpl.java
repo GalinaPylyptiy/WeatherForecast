@@ -4,6 +4,8 @@ import com.epam.weatherForecast.externalWeatherService.ExternalWeatherService;
 import com.epam.weatherForecast.model.Weather;
 import com.epam.weatherForecast.service.WeatherService;
 import com.epam.weatherForecast.util.AverageValueCalculator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,18 +15,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@RequiredArgsConstructor
 @Service
 public class WeatherServiceImpl implements WeatherService {
 
     private final Collection<ExternalWeatherService> externalWeatherServices;
     private final AverageValueCalculator calculator;
 
-    public WeatherServiceImpl(Collection<ExternalWeatherService> externalWeatherServices, AverageValueCalculator calculator) {
-        this.externalWeatherServices = externalWeatherServices;
-        this.calculator = calculator;
-    }
-
+    @Cacheable(value = "current_weather", key = "'current'")
     @Override
     public Weather getCurrentWeather(String city, String country) {
         Collection<Weather> currentWeatherList = getCurrentWeatherList(country, city);
@@ -37,13 +35,15 @@ public class WeatherServiceImpl implements WeatherService {
                 averageFeelsLike, averageWindSpeed, description);
     }
 
+    @Cacheable(value = "today_weather_list" , key = "'today'")
     @Override
     public Collection<Weather> getWeatherForToday(String country, String city) {
         return getAvgWeatherForToday(country, city);
     }
 
+    @Cacheable(value = "weather_by_hour", key = "#hour")
     @Override
-    public Weather getTodayWeatherForHour(String country, String city, int hour) {
+    public Weather getTodayWeatherForHour(String country, String city, Integer hour) {
         if (hour < 0 || hour >= 24) {
             throw new IllegalArgumentException("Inserted hour should be from  0 to 23");
         }
@@ -53,6 +53,7 @@ public class WeatherServiceImpl implements WeatherService {
         return hourWeather;
     }
 
+    @Cacheable(value = "compared_weather" , key = "'compared'")
     @Override
     public String compareTwoCitiesTemperature(String city1, String city2, String country) {
         Weather weatherCity1 = getCurrentWeather(city1, country);
