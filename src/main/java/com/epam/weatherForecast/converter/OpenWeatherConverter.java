@@ -5,6 +5,7 @@ import com.epam.weatherForecast.client.impl.OpenWeatherClientImpl;
 import com.epam.weatherForecast.dto.openWeather.WeatherDto;
 import com.epam.weatherForecast.dto.openWeather.WeatherListDto;
 import com.epam.weatherForecast.model.Weather;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,16 +14,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@RequiredArgsConstructor
 @Component
 public class OpenWeatherConverter {
 
     private final OpenWeatherClient weatherClient;
-
-    @Autowired
-    public OpenWeatherConverter(OpenWeatherClientImpl weatherClient) {
-        this.weatherClient = weatherClient;
-    }
 
     public Weather convertCurrentWeather(String city, String country) {
         WeatherDto weatherDto = weatherClient.getCurrentWeatherByCountryAndCity(city, country);

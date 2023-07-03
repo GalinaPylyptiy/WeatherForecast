@@ -18,7 +18,6 @@ public class WeatherApiClientImpl implements WeatherApiClient {
     private static final String CURRENT_WEATHER_URL = "http://api.weatherapi.com/v1/current.json?key={apiKey}&q={city},{country}&aqi=no";
     private static final String WEATHER_FOR_HOUR = "http://api.weatherapi.com/v1/forecast.json?key={apiKey}&q={city},{country}&hour={hour}";
     private static final String WEATHER_FOR_TODAY = "http://api.weatherapi.com/v1/forecast.json?key={apiKey}&q={city},{country}&days=1";
-    private static final String ERROR_MSG = "Error parsing json";
     @Value("${weatherAPIKey}")
     private String API_KEY;
     private final RestTemplate restTemplate;

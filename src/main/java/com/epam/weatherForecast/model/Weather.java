@@ -5,8 +5,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class Weather implements Serializable {
 
@@ -28,19 +36,6 @@ public class Weather implements Serializable {
 //    TODO change field name (type, definition, condition, state)
     private String description;
 
-    public Weather() {
-    }
-
-    public Weather(String city, String country, LocalDateTime dateAndTime, String temperature, String feelsLike, String windSpeed, String description) {
-        this.city = city;
-        this.country = country;
-        this.dateAndTime = dateAndTime;
-        this.temperature = temperature;
-        this.feelsLike = feelsLike;
-        this.windSpeed = windSpeed;
-        this.description = description;
-    }
-
     public Weather cloneWeatherWithoutDateAndTime(){
         Weather cloned = new Weather();
         cloned.setCity(this.getCity());
@@ -52,59 +47,4 @@ public class Weather implements Serializable {
         return cloned;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getTemperature() {
-        return temperature;
-    }
-
-    public void setTemperature(String temperature) {
-        this.temperature = temperature;
-    }
-
-    public String getFeelsLike() {
-        return feelsLike;
-    }
-
-    public void setFeelsLike(String feelsLike) {
-        this.feelsLike = feelsLike;
-    }
-
-    public String getWindSpeed() {
-        return windSpeed;
-    }
-
-    public void setWindSpeed(String windSpeed) {
-        this.windSpeed = windSpeed;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getDateAndTime() {
-        return dateAndTime;
-    }
-
-    public void setDateAndTime(LocalDateTime dateAndTime) {
-        this.dateAndTime = dateAndTime;
-    }
 }

@@ -4,6 +4,7 @@ import com.epam.weatherForecast.externalWeatherService.ExternalWeatherService;
 import com.epam.weatherForecast.model.Weather;
 import com.epam.weatherForecast.service.WeatherService;
 import com.epam.weatherForecast.util.AverageValueCalculator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
@@ -14,17 +15,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+@RequiredArgsConstructor
 @Service
 public class WeatherServiceImpl implements WeatherService {
 
     private final Collection<ExternalWeatherService> externalWeatherServices;
     private final AverageValueCalculator calculator;
-
-    public WeatherServiceImpl(Collection<ExternalWeatherService> externalWeatherServices, AverageValueCalculator calculator) {
-        this.externalWeatherServices = externalWeatherServices;
-        this.calculator = calculator;
-    }
 
     @Cacheable(value = "current_weather", key = "'current'")
     @Override
@@ -45,9 +41,9 @@ public class WeatherServiceImpl implements WeatherService {
         return getAvgWeatherForToday(country, city);
     }
 
-    @Cacheable(value = "weather_by_hour", key = "'hour'")
+    @Cacheable(value = "weather_by_hour", key = "#hour")
     @Override
-    public Weather getTodayWeatherForHour(String country, String city, int hour) {
+    public Weather getTodayWeatherForHour(String country, String city, Integer hour) {
         if (hour < 0 || hour >= 24) {
             throw new IllegalArgumentException("Inserted hour should be from  0 to 23");
         }

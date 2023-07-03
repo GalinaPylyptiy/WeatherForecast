@@ -3,7 +3,7 @@ package com.epam.weatherForecast.externalWeatherService.impl;
 import com.epam.weatherForecast.externalWeatherService.ExternalWeatherService;
 import com.epam.weatherForecast.converter.OpenWeatherConverter;
 import com.epam.weatherForecast.model.Weather;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -12,15 +12,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Component
 public class OpenWeatherService implements ExternalWeatherService {
 
     private final OpenWeatherConverter converter;
-
-    @Autowired
-    public OpenWeatherService(OpenWeatherConverter converter) {
-        this.converter = converter;
-    }
 
     public Weather getCurrentWeather(String city, String country) {
         return converter.convertCurrentWeather(city, country);

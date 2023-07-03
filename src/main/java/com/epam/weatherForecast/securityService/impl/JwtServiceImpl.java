@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,13 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 @PropertySource("classpath:value.properties")
 public class JwtServiceImpl implements JwtService {
 
     @Value("${secretKey}")
     private String SECRET_KEY;
-    private static final Logger LOGGER = LoggerFactory.getLogger(JwtServiceImpl.class);
 
     @Override
     public String extractUserLogin(String jwtToken) {
@@ -62,7 +63,7 @@ public class JwtServiceImpl implements JwtService {
                     .build()
                     .parseClaimsJws(jwtToken);
         } catch (Exception ex) {
-            LOGGER.error("Token is not valid: {}", ex.getMessage());
+            log.error("Token is not valid: {}", ex.getMessage());
             throw new InvalidJwtTokenException("JWT token is invalid");
         }
     }
