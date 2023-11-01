@@ -3,7 +3,6 @@ package com.epam.weatherForecast.securityService.impl;
 import com.epam.weatherForecast.entity.User;
 import com.epam.weatherForecast.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +16,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
+
     private final UserService userService;
 
     @Override

@@ -1,18 +1,28 @@
 version: '3'
+
+name: weather-service
+
 services:
     API:
         image: 'weather:latest'
         ports:
-            - "8080:8080"
+            - "8081:8081"
         depends_on:
             - db
             - cache
         environment:
-             SPRING_PROFILES_ACTIVE : server
+            - DB_HOST=db
+            - DB_PORT=5432
+            - DB_NAME=weather_user
+            - DB_USER=user
+            - DB_PASSWORD=12345
+            - SERVER_PORT=8081
+            - REDIS_HOST=cache
+            - REDIS_PORT=6379
     db:
         image: postgres:14
         ports:
-          - "5432:5432"
+          - "5433:5432"
         environment:
              POSTGRES_DB: weather_user
              POSTGRES_USER: user

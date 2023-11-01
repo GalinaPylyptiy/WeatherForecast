@@ -1,12 +1,10 @@
 package com.epam.weatherForecast.converter;
 
 import com.epam.weatherForecast.client.OpenWeatherClient;
-import com.epam.weatherForecast.client.impl.OpenWeatherClientImpl;
 import com.epam.weatherForecast.dto.openWeather.WeatherDto;
 import com.epam.weatherForecast.dto.openWeather.WeatherListDto;
 import com.epam.weatherForecast.model.Weather;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

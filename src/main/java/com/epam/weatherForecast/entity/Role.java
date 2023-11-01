@@ -17,13 +17,13 @@ import lombok.ToString;
 import java.util.Collection;
 
 @Entity
-@Table(name = "role")
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "role")
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

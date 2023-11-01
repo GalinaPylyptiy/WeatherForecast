@@ -7,6 +7,7 @@ import com.epam.weatherForecast.util.AverageValueCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -22,7 +23,7 @@ public class WeatherServiceImpl implements WeatherService {
     private final Collection<ExternalWeatherService> externalWeatherServices;
     private final AverageValueCalculator calculator;
 
-    @Cacheable(value = "current_weather", key = "'current'")
+    @Cacheable(value = "current_weather", key = "{#country, #city}")
     @Override
     public Weather getCurrentWeather(String city, String country) {
         Collection<Weather> currentWeatherList = getCurrentWeatherList(country, city);
@@ -35,13 +36,13 @@ public class WeatherServiceImpl implements WeatherService {
                 averageFeelsLike, averageWindSpeed, description);
     }
 
-    @Cacheable(value = "today_weather_list" , key = "'today'")
+    @Cacheable(value = "today_weather_list", key = "{#country, #city}")
     @Override
     public Collection<Weather> getWeatherForToday(String country, String city) {
         return getAvgWeatherForToday(country, city);
     }
 
-    @Cacheable(value = "weather_by_hour", key = "#hour")
+    @Cacheable(value = "weather_by_hour", key = "{#country, #city, #hour}")
     @Override
     public Weather getTodayWeatherForHour(String country, String city, Integer hour) {
         if (hour < 0 || hour >= 24) {
@@ -53,7 +54,7 @@ public class WeatherServiceImpl implements WeatherService {
         return hourWeather;
     }
 
-    @Cacheable(value = "compared_weather" , key = "'compared'")
+    @Cacheable(value = "compared_weather", key = "{#country, #city1, #city2}")
     @Override
     public String compareTwoCitiesTemperature(String city1, String city2, String country) {
         Weather weatherCity1 = getCurrentWeather(city1, country);
@@ -112,7 +113,7 @@ public class WeatherServiceImpl implements WeatherService {
         return LocalDateTime.of(localDate, localTime);
     }
 
-    private Weather setAvgWeatherDataWithoutDateAndTime(String city, String country, Collection<Weather> weatherList){
+    private Weather setAvgWeatherDataWithoutDateAndTime(String city, String country, Collection<Weather> weatherList) {
         Weather weather = new Weather();
         weather.setCity(city);
         weather.setCountry(country);
@@ -129,5 +130,3 @@ public class WeatherServiceImpl implements WeatherService {
 
 }
 
-//TODO Lombok
-//TODO MupStruct
