@@ -2,7 +2,7 @@ package com.epam.weatherForecast.securityService.impl;
 
 import com.epam.weatherForecast.entity.User;
 import com.epam.weatherForecast.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,14 +13,11 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+@RequiredArgsConstructor
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
-    private final UserService userService;
 
-    @Autowired
-    public UserDetailServiceImpl(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

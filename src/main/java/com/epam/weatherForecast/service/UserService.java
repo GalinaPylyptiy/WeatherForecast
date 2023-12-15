@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface UserService {
 
-    AuthResponse addUser(User user);
+    AuthResponse addOrAuthenticateUser(User user);
 
     Optional<User> findUserById(Long id);
 
